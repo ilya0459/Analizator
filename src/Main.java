@@ -8,7 +8,7 @@ public class Main {
     public static BlockingQueue<String> maxB = new ArrayBlockingQueue<>(100);
     public static BlockingQueue<String> maxC = new ArrayBlockingQueue<>(100);
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
 
         new Thread(() -> {
             for (int i = 0; i < 10_000; i++) {
@@ -22,7 +22,7 @@ public class Main {
             }
         }).start();
 
-        new Thread(() -> {
+        Thread threadA = new Thread(() -> {
             MaxTextABC<String, Integer> maxTextABC;
             try {
                 maxTextABC = getMax(maxA, 'a');
@@ -30,9 +30,10 @@ public class Main {
                 throw new RuntimeException(e);
             }
             System.out.println("Символов A (" + maxTextABC.getCount() + "):\n" + maxTextABC.getText() + "\n");
-        }).start();
+        });
+        threadA.start();
 
-        new Thread(() -> {
+        Thread threadB = new Thread(() -> {
             MaxTextABC<String, Integer> maxTextABC;
             try {
                 maxTextABC = getMax(maxB, 'b');
@@ -40,9 +41,10 @@ public class Main {
                 throw new RuntimeException(e);
             }
             System.out.println("Символов B (" + maxTextABC.getCount() + "):\n" + maxTextABC.getText() + "\n");
-        }).start();
+        });
+        threadB.start();
 
-        new Thread(() -> {
+        Thread threadC = new Thread(() -> {
             MaxTextABC<String, Integer> maxTextABC;
             try {
                 maxTextABC = getMax(maxC, 'c');
@@ -50,7 +52,12 @@ public class Main {
                 throw new RuntimeException(e);
             }
             System.out.println("Символов C (" + maxTextABC.getCount() + "):\n" + maxTextABC.getText() + "\n");
-        }).start();
+        });
+        threadC.start();
+
+        threadA.join();
+        threadB.join();
+        threadC.join();
     }
 
     public static String generateText(String letters, int length) {
